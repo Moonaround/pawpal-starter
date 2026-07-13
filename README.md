@@ -99,4 +99,3 @@ Follow these instructions to experience the full automated capabilities of the P
 3. **Trigger Time Capacity Constraints:** Use the time slider to restrict your total calendar availability for the day. Click the **Generate schedule** button. The optimization scheduler reads incoming items, evaluates capacity limits, chronologically sorts elements, and highlights exactly what tasks fit or what entries were safely skipped due to capacity caps.
 4. **Inspect Validation Overlaps:** Add an extra care task at an identical or overlapping timeline slot. The layout interface instantly flashes a bright red validation banner indicating a **Schedule Time Conflict** error, keeping your daily care routine organized and collision-free.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
