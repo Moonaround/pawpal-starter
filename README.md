@@ -72,14 +72,12 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.get_daily_tasks()` | Sorts items primarily by start time via lambda, cascading to priority ranking. |
+| Filtering | `Pet.get_filtered_tasks()` | Allows isolation of care records based on custom completion boolean flags. |
+| Conflict handling | `Scheduler.detect_conflicts()` | Implements bounding interval comparison equations to pinpoint concurrent booking. |
+| Recurring tasks | `Task.mark_complete()` | Employs timedelta vector projections to recreate new task twins for future dates. |
 
 ## 📸 Demo Walkthrough
 

@@ -24,9 +24,8 @@ During the initial UML setup, the `Pet` and `Task` structures were moved from st
 - How did you decide which constraints mattered most?
 
 **b. Tradeoffs**
+The conflict detection algorithm uses an O(N²) nested inspection loop to evaluate calendar events. While this design is slightly less efficient for massive databases, it is highly reasonable here because individual pet profiles rarely exceed 10–15 scheduled routine care items a day, allowing the code to remain simple, legible, and lightweight.
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
 
 ---
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from datetime import datetime, timedelta
 
 @dataclass
@@ -11,11 +11,41 @@ class Task:
     date_time: datetime
     duration_minutes: int
     priority: str  # "High", "Medium", "Low"
+    frequency: str = "Once"  # "Once", "Daily", "Weekly"
     is_completed: bool = False
 
-    def mark_complete(self) -> None:
-        """Mark the task as completed by switching its status flag."""
+    def mark_complete(self) -> Optional['Task']:
+        """
+        Mark the task as completed. If it is a recurring task, 
+        return a new task instance scheduled for the next occurrence.
+        """
         self.is_completed = True
+        
+        if self.frequency == "Daily":
+            next_time = self.date_time + timedelta(days=1)
+            return Task(
+                task_id=f"{self.task_id}_next",
+                pet_name=self.pet_name,
+                title=self.title,
+                description=self.description,
+                date_time=next_time,
+                duration_minutes=self.duration_minutes,
+                priority=self.priority,
+                frequency=self.frequency
+            )
+        elif self.frequency == "Weekly":
+            next_time = self.date_time + timedelta(weeks=1)
+            return Task(
+                task_id=f"{self.task_id}_next",
+                pet_name=self.pet_name,
+                title=self.title,
+                description=self.description,
+                date_time=next_time,
+                duration_minutes=self.duration_minutes,
+                priority=self.priority,
+                frequency=self.frequency
+            )
+        return None
 
     @property
     def end_time(self) -> datetime:
@@ -40,6 +70,12 @@ class Pet:
         """Add a specific care task directly to this pet's itinerary."""
         self.tasks.append(task)
 
+    def get_filtered_tasks(self, completion_status: Optional[bool] = None) -> List[Task]:
+        """Filter this pet's tasks by completion status."""
+        if completion_status is None:
+            return self.tasks
+        return [t for t in self.tasks if t.is_completed == completion_status]
+
 class Owner:
     def __init__(self, name: str, email: str):
         self.name: str = name
@@ -47,7 +83,7 @@ class Owner:
         self.pets: List[Pet] = []
 
     def add_pet(self, pet: Pet) -> None:
-        """Add a new registered pet to the owner's profile profile."""
+        """Add a new registered pet to the owner's profile."""
         if pet not in self.pets:
             self.pets.append(pet)
 
@@ -70,6 +106,7 @@ class Scheduler:
         """Return all daily tasks sorted chronologically by time and priority tier."""
         target_date = date.date()
         daily_tasks = [t for t in self.tasks if t.date_time.date() == target_date]
+        # Lambda sorting: primary key is date_time, secondary key is priority hierarchy descending
         daily_tasks.sort(key=lambda t: (t.date_time, -t.priority_value))
         return daily_tasks
 
@@ -88,17 +125,20 @@ class Scheduler:
         return scheduled, skipped
 
     def detect_conflicts(self) -> List[Tuple[Task, Task]]:
-        """Find overlapping target execution window windows for individual pets."""
+        """Find overlapping time execution windows for individual pets to prevent double-booking."""
         conflicts = []
         pet_tasks_map = {}
         for task in self.tasks:
-            pet_tasks_map.setdefault(task.pet_name, []).append(task)
+            # Skip checking tasks that are already completed
+            if not task.is_completed:
+                pet_tasks_map.setdefault(task.pet_name, []).append(task)
 
         for pet_name, tasks in pet_tasks_map.items():
             sorted_tasks = sorted(tasks, key=lambda t: t.date_time)
             for i in range(len(sorted_tasks)):
                 for j in range(i + 1, len(sorted_tasks)):
                     t1, t2 = sorted_tasks[i], sorted_tasks[j]
+                    # Overlap interval algorithm formula: (StartA < EndB) AND (StartB < EndA)
                     if t1.date_time < t2.end_time and t2.date_time < t1.end_time:
                         conflicts.append((t1, t2))
         return conflicts
