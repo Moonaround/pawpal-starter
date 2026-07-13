@@ -1,65 +1,50 @@
 import streamlit as st
 from datetime import datetime, timedelta
-# --- STEP 1: ESTABLISH THE CONNECTION ---
-from pawpal_system import Owner, Pet, Task, Scheduler
+from pawpal_system import Task, Pet, Scheduler, save_system_data, load_system_data
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
-# --- STEP 2: MANAGE THE APPLICATION MEMORY ---
+# --- CUSTOM HOOK FOR TASK EMOJI FORMATTING (CHALLENGE 4) ---
+def get_task_emoji(title: str) -> str:
+    title_lower = title.lower()
+    if "walk" in title_lower or "exercise" in title_lower:
+        return "🦮"
+    if "feed" in title_lower or "food" in title_lower or "breakfast" in title_lower or "dinner" in title_lower:
+        return "🥣"
+    if "med" in title_lower or "pill" in title_lower or "vet" in title_lower:
+        return "💊"
+    if "groom" in title_lower or "brush" in title_lower or "bath" in title_lower:
+        return "🧼"
+    return "📝"
+
+# Initialize state from our persistent storage layer file
 if "owner" not in st.session_state:
-    # Initialize the core owner profile in the session memory vault
-    st.session_state["owner"] = Owner("Jordan", "jordan@example.com")
+    st.session_state["owner"] = load_system_data()
 
 if "scheduler" not in st.session_state:
-    # Initialize the central scheduling system brain
     st.session_state["scheduler"] = Scheduler()
 
-# Pull our active objects from session state to keep data stable across clicks
 owner = st.session_state["owner"]
 scheduler = st.session_state["scheduler"]
 
-st.title("🐾 PawPal+")
-
-st.markdown(
-    """
-Welcome to the PawPal+ application. Your modular object-oriented backend logic layer 
-is now fully integrated with this user interface.
-"""
-)
-
-with st.expander("Scenario", expanded=False):
-    st.markdown(
-        """
-**PawPal+** is a pet care planning assistant. It helps a pet owner plan care tasks
-for their pet(s) based on constraints like time, priority, and preferences.
-"""
-    )
-
-st.divider()
+st.title("🐾 PawPal+ Care Hub")
 
 st.subheader("Profile Configuration")
-# Allow the user to update the active owner profile configuration dynamically
 ui_owner_name = st.text_input("Owner name", value=owner.name)
-owner.name = ui_owner_name
+if ui_owner_name != owner.name:
+    owner.name = ui_owner_name
+    save_system_data(owner)
 
-# Sync our default pet into the backend if it isn't tracked yet
 pet_name = st.text_input("Pet name", value="Mochi")
 species = st.selectbox("Species", ["dog", "cat", "other"])
 
-# Check if this pet is already in the backend; if not, create it
-active_pet = None
-for p in owner.pets:
-    if p.name == pet_name:
-        active_pet = p
-        break
-
+active_pet = next((p for p in owner.pets if p.name == pet_name), None)
 if active_pet is None:
     active_pet = Pet(name=pet_name, species=species, age=2)
     owner.add_pet(active_pet)
+    save_system_data(owner)
 
 st.markdown("### Tasks")
-st.caption("Add care routine tasks below. These tasks feed directly into your algorithmic scheduler.")
-
 col1, col2, col3 = st.columns(3)
 with col1:
     task_title = st.text_input("Task title", value="Morning walk")
@@ -68,82 +53,56 @@ with col2:
 with col3:
     priority = st.selectbox("Priority", ["low", "medium", "high"], index=2)
 
-# --- STEP 3: WIRING UI ACTIONS TO LOGIC ---
 if st.button("Add task"):
     if task_title:
-        # Create a timestamp starting today at 8:00 AM, offsetting tasks incrementally
         base_time = datetime.combine(datetime.today(), datetime.min.time()) + timedelta(hours=8)
         offset_minutes = sum(t.duration_minutes for t in active_pet.tasks)
         scheduled_dt = base_time + timedelta(minutes=offset_minutes)
         
-        # Instantiate a formal backend Task object
         new_task = Task(
-            task_id=f"task_{int(datetime.now().timestamp())}_{len(active_pet.tasks)}",
+            task_id=f"task_{int(datetime.now().timestamp())}",
             pet_name=active_pet.name,
             title=task_title,
-            description=f"Routine care for {active_pet.name}",
+            description=f"Routine care",
             date_time=scheduled_dt,
             duration_minutes=int(duration),
-            priority=priority.capitalize()  # Standardize to High, Medium, Low
+            priority=priority.capitalize()
         )
-        
-        # Wire action directly to the pet backend method
         active_pet.add_task(new_task)
-        st.success(f"Added '{task_title}' to {active_pet.name}'s task profile!")
-    else:
-        st.error("Please enter a valid task title.")
+        save_system_data(owner)  # Save changes instantly to JSON database
+        st.success(f"Added '{task_title}' successfully!")
 
-# Render live tasks from the actual backend object data structures
 if active_pet.tasks:
-    st.write(f"Current backend tasks for **{active_pet.name}**:")
-    display_list = []
-    for t in active_pet.tasks:
-        display_list.append({
-            "Title": t.title,
-            "Duration (m)": t.duration_minutes,
-            "Priority": t.priority
-        })
+    st.write(f"Current tasks for **{active_pet.name}**:")
+    display_list = [{"Emoji": get_task_emoji(t.title), "Title": t.title, "Duration (m)": t.duration_minutes, "Priority": t.priority} for t in active_pet.tasks]
     st.table(display_list)
-else:
-    st.info("No tasks registered yet. Add one above.")
 
 st.divider()
-
 st.subheader("Build Schedule")
-st.caption("Configure available schedule constraints to test filtration algorithms.")
-
-# Add a constraint slider to limit schedule generation time windows
-max_time_allowed = st.slider("Max Available Time Capacity (minutes)", min_value=10, max_value=480, value=120, step=10)
+max_time_allowed = st.slider("Max Available Time Capacity (minutes)", min_value=10, max_value=480, value=120)
 
 if st.button("Generate schedule"):
-    # Synchronize and aggregate recent updates into the scheduler container
     scheduler.sync_tasks_from_owner(owner)
-    
-    # Run optimization plan logic based on active date timeline
     target_date = datetime.combine(datetime.today(), datetime.min.time())
     scheduled, skipped = scheduler.generate_plan(target_date, max_time_allowed)
     
     if not scheduled and not skipped:
-        st.warning("No tasks found to schedule. Add tasks above first!")
+        st.warning("No tasks found.")
     else:
-        st.success("🗓️ Daily Optimized Plan Generated successfully!")
-        
-        st.markdown(f"### Daily plan for {active_pet.name} ({active_pet.species}):")
+        st.markdown(f"### Daily plan for {active_pet.name}:")
         for task in scheduled:
             time_str = task.date_time.strftime("%H:%M")
-            st.markdown(f"🔹 **{time_str}** — {task.title} ({task.duration_minutes} min) `[priority: {task.priority.lower()}]`")
+            emoji = get_task_emoji(task.title)
+            # Use color-coded priority badges
+            badge_color = "green" if task.priority == "Low" else "orange" if task.priority == "Medium" else "red"
+            st.markdown(f"🔹 **{time_str}** — {emoji} **{task.title}** ({task.duration_minutes} min) :broken_heart:[<span style='color:{badge_color}'>{task.priority}</span>]", unsafe_allow_html=True)
             
-        # Explaining the logic / reasoning engine results transparently to the user
-        st.info(f"💡 **Scheduler Reasoning:** Tasks were ordered chronologically. "
-                f"A total of {sum(t.duration_minutes for t in scheduled)} minutes of care was scheduled.")
-        
         if skipped:
             st.markdown("---")
-            st.markdown("⚠️ **Omitted Tasks (Exceeded Time Capacity Constraints):**")
+            st.markdown("⚠️ **Omitted due to limits:**")
             for task in skipped:
-                st.markdown(f"🔸 ~~{task.title}~~ ({task.duration_minutes} min) — *Dropped to preserve available time limits.*")
+                st.markdown(f"🔸 ~~{task.title}~~ ({task.duration_minutes} min)")
 
-        # Conflict Handling checks
         conflicts = scheduler.detect_conflicts()
         if conflicts:
-            st.error("⚠️ **Schedule Time Conflicts Detected!** Multi-task overlap identified for the same asset.")
+            st.error("⚠️ **Schedule Time Conflicts Detected!**")
