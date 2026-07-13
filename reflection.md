@@ -46,14 +46,10 @@ The conflict detection algorithm uses an O(N²) nested inspection loop to evalua
 ## 4. Testing and Verification
 
 **a. What you tested**
-
-- What behaviors did you test?
-- Why were these tests important?
+I implemented automated test suites targeting bounding criteria: chronological sequencing arrays, overlapping timeline checking vectors, time duration capacity filtration caps, and recursive daily generation objects. These tests guarantee that core scheduling calculations run accurately behind the scenes.
 
 **b. Confidence**
-
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+I rate system operational reliability as a 5/5. If given more time, I would build test vectors checking year-boundary transition math (e.g., Leap Years or Daylight Savings switches) to protect time metrics globally.
 
 ---
 

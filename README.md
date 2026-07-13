@@ -56,19 +56,30 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 
 ## 🧪 Testing PawPal+
 
+To validate the algorithmic logic layers, schedule sorting correctness, boundary limit constraints, overlapping intervals, and recurring task generation routines, execute the suite via terminal command line:
+
 ```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest -v
 ```
 
-Sample test output:
+### Successful Test Run Execution Output Logs:
+```text
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.4, pluggy-1.5.0
+rootdir: /home/jap/Documents/Codepath/AI110/pawpal-starter/pawpal-starter
+collected 4 items
 
+tests/test_pawpal.py::test_task_completion_and_recurrence_logic PASSED   [ 25%]
+tests/test_pawpal.py::test_sorting_correctness_chronological PASSED     [ 50%]
+tests/test_pawpal.py::test_conflict_detection_logic PASSED               [ 75%]
+tests/test_pawpal.py::test_capacity_filtering_edge_case PASSED           [100%]
+
+============================== 4 passed in 0.04s ===============================
 ```
-# Paste your pytest output here
-```
+
+### System Reliability Rating:
+⭐⭐⭐⭐⭐ (5/5 Stars) — Core routines undergo programmatic testing across edge criteria, handling structural boundaries gracefully.
+
 
 ## 📐 Smarter Scheduling
 
