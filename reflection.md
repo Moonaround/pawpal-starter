@@ -1,16 +1,18 @@
 # PawPal+ Project Reflection
 
+# PawPal+ Project Reflection
+
 ## 1. System Design
 
 **a. Initial design**
-
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The initial system architecture is structured around four primary modular classes to handle clean object interactions:
+- **Owner**: Manages user details and stores registered pet instances.
+- **Pet**: Uses a clean Python Dataclass structure to manage animal characteristics like name, species, age, and health history.
+- **Task**: Represents care requirements (feedings, walks) containing a definitive start time, duration, and priority level.
+- **Scheduler**: Operates as the central logic runner to execute task chronological sorting, total duration constraints, and overlap checking.
 
 **b. Design changes**
-
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+During the initial UML setup, the `Pet` and `Task` structures were moved from standard classes to modern Python Dataclasses. This architectural choice automatically implements the `__init__` constructor method, ensuring simpler data object tracking and lower code complexity.
 
 ---
 
