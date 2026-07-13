@@ -92,12 +92,11 @@ tests/test_pawpal.py::test_capacity_filtering_edge_case PASSED           [100%]
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+Follow these instructions to experience the full automated capabilities of the PawPal+ application interface:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. **Configure Profiles:** Input the manager's name and choose a default care recipient (e.g., set the Pet Name field to `Mochi` and select species `dog`). 
+2. **Inject Scheduling Telemetry:** Enter a Task Title (e.g., `Morning walk`), adjust the duration tracker slider to `30` minutes, set the priority selection box to `high`, and click the **Add task** button. The application updates memory instantly and displays your new entry inside the backend tracking data matrix.
+3. **Trigger Time Capacity Constraints:** Use the time slider to restrict your total calendar availability for the day. Click the **Generate schedule** button. The optimization scheduler reads incoming items, evaluates capacity limits, chronologically sorts elements, and highlights exactly what tasks fit or what entries were safely skipped due to capacity caps.
+4. **Inspect Validation Overlaps:** Add an extra care task at an identical or overlapping timeline slot. The layout interface instantly flashes a bright red validation banner indicating a **Schedule Time Conflict** error, keeping your daily care routine organized and collision-free.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
